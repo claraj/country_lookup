@@ -1,20 +1,21 @@
 import requests 
 
-def get_country_name(country_code):
-    """ Returns a tuple of found, country name, error 
-    If country is found, the tuple will be (True, country name, None)
-    If country is not found, the tuple will be (False, None, None)
-    If there is an error connecting to the API. the tuple will be (False, None, error message)"""
+def get_country_info(country_code):
+    """ Returns a dictionary with country information.
+    If country is found: {'found': True, 'name': country_name, 'capital': capital_city, 'error': None}
+    If country is not found: {'found': False, 'name': None, 'capital': None, 'error': None}
+    If there is an API error: {'found': False, 'name': None, 'capital': None, 'error': error_message}"""
 
     try:
         url = create_url(country_code)
         json_response = make_api_request(url)
         if not json_response:
-             return False, None, None 
+             return {'found': False, 'name': None, 'capital': None, 'error': None}
         name = get_name_from_response(json_response)
-        return True, name, None
+        capital = get_capital_from_response(json_response)
+        return {'found': True, 'name': name, 'capital': capital, 'error': None}
     except Exception as e:
-        return False, None, 'Error connecting to API'
+        return {'found': False, 'name': None, 'capital': None, 'error': 'Error connecting to API'}
 
 def create_url(country_code):
     url = f'https://restcountries.com/v3.1/alpha/{country_code}'
@@ -33,3 +34,8 @@ def make_api_request(url):
 def get_name_from_response(json_response):
     name = json_response[0]['name']['official']
     return name
+
+
+def get_capital_from_response(json_response):
+    capital = json_response[0]['capital'][0] if 'capital' in json_response[0] else None
+    return capital
