@@ -1,20 +1,28 @@
-import requests 
+import requests
+from typing import NamedTuple
 
-def get_country_name(country_code):
-    """ Returns a tuple of found, country name, error 
-    If country is found, the tuple will be (True, country name, None)
-    If country is not found, the tuple will be (False, None, None)
-    If there is an error connecting to the API. the tuple will be (False, None, error message)"""
+
+class CountryResult(NamedTuple):
+    found: bool
+    name: str | None
+    capital: str | None
+    error: str | None
+
+def get_country_info(country_code):
+    """ Returns a CountryResult with found status, country name, capital, and error.
+    If country is found: CountryResult(found=True, name=..., capital=..., error=None)
+    If country is not found: CountryResult(found=False, name=None, capital=None, error=None)
+    If there is an error: CountryResult(found=False, name=None, capital=None, error=...)"""
 
     try:
         url = create_url(country_code)
         json_response = make_api_request(url)
         if not json_response:
-             return False, None, None 
-        name = get_name_from_response(json_response)
-        return True, name, None
+             return CountryResult(found=False, name=None, capital=None, error=None)
+        name, capital = get_country_info_from_response(json_response)
+        return CountryResult(found=True, name=name, capital=capital, error=None)
     except Exception as e:
-        return False, None, 'Error connecting to API'
+        return CountryResult(found=False, name=None, capital=None, error='Error connecting to API')
 
 def create_url(country_code):
     url = f'https://restcountries.com/v3.1/alpha/{country_code}'
@@ -30,6 +38,7 @@ def make_api_request(url):
     return json
 
 
-def get_name_from_response(json_response):
+def get_country_info_from_response(json_response):
     name = json_response[0]['name']['official']
-    return name
+    capital = json_response[0]['capital'][0] if json_response[0].get('capital') else 'N/A'
+    return name, capital

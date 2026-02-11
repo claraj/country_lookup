@@ -7,11 +7,12 @@ def main():
         code = input('Enter country code or press enter to quit ')
         # TODO check code is 2 letters 
         # TODO end the loop if user presses enter
-        found, name, error = country_api.get_country_name(code)
+        result = country_api.get_country_info(code)
         
-        if found:
-            print(f'{code} is the country code for {name}')
-        elif not found and not error:
+        if result.found:
+            print(f'{code} is the country code for {result.name}')
+            print(f'Capital: {result.capital}')
+        elif not result.found and not result.error:
             print('No country found for that code')
         else:
             print('Error fetching data')
